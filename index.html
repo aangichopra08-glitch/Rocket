@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClinicConnect - AI Healthcare & Patient Companion</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col antialiased selection:bg-teal-500 selection:text-white">
+
+  <!-- TOP GLOBAL NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="App.switchRole('clinic')">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-teal-500/20">
+          <i data-lucide="activity" class="w-6 h-6 stroke-[2.5]"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-teal-700 to-indigo-700 bg-clip-text text-transparent">
+              ClinicConnect
+            </span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800 uppercase tracking-wide">
+              Gemini 2.5 Flash
+            </span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium -mt-0.5 hidden sm:block">AI Care Package & Multilingual Patient Companion</p>
+        </div>
+      </div>
+
+      <!-- Current Mode & Live Database Badges -->
+      <div class="flex items-center gap-2">
+        <div id="currentRoleBadge" class="hidden sm:block"></div>
+        <div id="dbStatusBadge" class="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>SQLite Live API Connected</span>
+        </div>
+      </div>
+
+      <!-- Dual Role Switcher & Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        
+        <!-- Dual Mode Segmented Button -->
+        <div class="bg-slate-100 p-1 rounded-2xl flex items-center border border-slate-200 text-xs font-semibold shadow-inner">
+          <button onclick="App.switchRole('clinic')" id="navBtnClinic" class="px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="stethoscope" class="w-3.5 h-3.5"></i>
+            <span>Clinic Portal (Doctor View)</span>
+          </button>
+          <button onclick="App.switchRole('patient')" id="navBtnPatient" class="px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="user-heart" class="w-3.5 h-3.5"></i>
+            <span>Patient Companion (Patient View)</span>
+          </button>
+        </div>
+
+        <!-- Language Free Voice Assistant Header Trigger -->
+        <button onclick="voiceAI.startListening('auto')" 
+          class="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-500/10 flex items-center gap-2 transition cursor-pointer"
+          title="Click to speak in any language">
+          <i data-lucide="mic" class="w-4 h-4 animate-pulse"></i>
+          <span class="hidden md:inline">Voice Assistant</span>
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN DYNAMIC CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div id="mainContent">
+      <!-- Injected dynamically by App.render() -->
+      <div class="flex items-center justify-center min-h-[60vh]">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-700">ClinicConnect</span>
+        <span>•</span>
+        <span>Empathetic AI Care Plan Pipeline with Google Gemini 2.5 Flash</span>
+      </div>
+      <div class="flex items-center gap-4 text-slate-400">
+        <span>Languages: English (en) • Hindi (hi) • Gujarati (gu)</span>
+        <span>•</span>
+        <span>Zero Demo Risk Fallback Enabled</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FLOATING UNIVERSAL LANGUAGE-FREE VOICE BUTTON -->
+  <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+    <!-- Quick Voice Hint Tooltip -->
+    <div class="bg-slate-900 text-white text-xs px-3 py-1.5 rounded-xl shadow-xl border border-slate-700 pointer-events-none opacity-90 transition transform duration-200 hidden sm:block">
+      🎙️ <strong>Language-Free Voice</strong> • Speak in any language
+    </div>
+
+    <button id="globalVoiceBtn" onclick="voiceAI.startListening('auto')"
+      class="w-16 h-16 rounded-full bg-gradient-to-tr from-teal-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition voice-pulse cursor-pointer group"
+      aria-label="Activate Multilingual Voice Assistant">
+      <i data-lucide="mic" class="w-7 h-7 group-hover:scale-110 transition"></i>
+    </button>
+  </div>
+
+  <!-- LOADING SPINNER MODAL FOR CARE PACKAGE GENERATION -->
+  <div id="carePlanLoadingModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-teal-100 text-center animate-in zoom-in-95">
+      <div class="w-20 h-20 mx-auto rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-4 relative">
+        <div class="absolute inset-0 rounded-full border-4 border-teal-200 border-t-teal-600 animate-spin"></div>
+        <i data-lucide="sparkles" class="w-8 h-8 text-teal-600 animate-pulse"></i>
+      </div>
+      
+      <h3 class="text-lg font-bold text-slate-900">Generating Patient Care Package</h3>
+      <p id="carePlanLoadingStatus" class="text-xs text-teal-700 font-medium mt-1">Analyzing lab values with Gemini 2.5 Flash...</p>
+      
+      <div class="space-y-2 mt-6 text-left text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <div class="flex items-center gap-2 text-slate-700">
+          <span class="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
+          <span>Parsing clinical parameters & reference ranges</span>
+        </div>
+        <div class="flex items-center gap-2 text-slate-700">
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
+          <span>Translating into empathetic 5th-grade guidance</span>
+        </div>
+        <div class="flex items-center gap-2 text-slate-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span>Assembling daily checklist & doctor questions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOICE ASSISTANT MODAL DIALOG -->
+  <div id="voiceModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Close button -->
+      <button onclick="voiceAI.closeVoiceModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Assistant Header -->
+      <div class="text-center pb-4 border-b border-slate-100">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-teal-500 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-teal-500/20 mb-3">
+          <i data-lucide="mic" class="w-8 h-8 animate-pulse"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900">Language-Free Voice AI</h3>
+        <p id="voiceAssistantStatus" class="text-xs text-teal-600 font-semibold mt-1">Listening in your language... Speak now</p>
+      </div>
+
+      <!-- Animated Sound Wave Visualizer -->
+      <div class="my-5">
+        <div id="voiceVisualizer" class="flex items-center justify-center gap-1.5 h-12 bg-slate-50 rounded-2xl p-2 border border-slate-100">
+          <span class="w-1.5 bg-teal-500 rounded-full waveform-bar h-2"></span>
+          <span class="w-1.5 bg-indigo-500 rounded-full waveform-bar h-4"></span>
+          <span class="w-1.5 bg-teal-600 rounded-full waveform-bar h-6"></span>
+          <span class="w-1.5 bg-indigo-600 rounded-full waveform-bar h-8"></span>
+          <span class="w-1.5 bg-purple-500 rounded-full waveform-bar h-5"></span>
+          <span class="w-1.5 bg-teal-400 rounded-full waveform-bar h-3"></span>
+          <span class="w-1.5 bg-indigo-400 rounded-full waveform-bar h-2"></span>
+        </div>
+      </div>
+
+      <!-- Live Speech Transcript Box -->
+      <div class="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 mb-4 min-h-[64px] flex items-center justify-center text-center">
+        <p id="voiceTranscriptText" class="text-sm font-medium text-slate-800 italic">"Say any command: e.g. Open Patient Companion, Generate Care Plan, Emergency SOS, Show Red Patients..."</p>
+      </div>
+
+      <!-- Execution Feedback -->
+      <div id="voiceActionResult" class="text-xs text-slate-500 text-center mb-4 min-h-[20px]"></div>
+
+      <!-- Language selector dropdown -->
+      <div class="flex items-center justify-between gap-2 p-2.5 bg-slate-100 rounded-2xl text-xs mb-4">
+        <span class="font-bold text-slate-700 flex items-center gap-1">
+          <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-600"></i>
+          Language Mode:
+        </span>
+        <select id="voiceLangChoice" onchange="voiceAI.startListening(this.value)" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1 text-slate-700 font-medium">
+          <option value="auto" selected>🌐 Auto Detect Language</option>
+          <option value="hi-IN">🇮🇳 Hindi (हिंदी)</option>
+          <option value="gu-IN">🇮🇳 Gujarati (ગુજરાતી)</option>
+          <option value="en-US">🇺🇸 English</option>
+          <option value="es-ES">🇪🇸 Spanish (Español)</option>
+          <option value="bn-IN">🇧🇩 Bengali (বাংলা)</option>
+          <option value="mr-IN">🇮🇳 Marathi (मराठी)</option>
+          <option value="ta-IN">🇮🇳 Tamil (தமிழ்)</option>
+        </select>
+      </div>
+
+      <!-- Quick Command Simulation Chips -->
+      <div class="space-y-1.5 mb-4">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Or Test Quick Voice Commands:</span>
+        <div class="flex flex-wrap gap-1.5">
+          <button onclick="voiceAI.processCommand('Go to patient dashboard')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-700 text-xs font-medium border border-slate-200 cursor-pointer transition">
+            "Open Patient Companion"
+          </button>
+          <button onclick="voiceAI.processCommand('Show doctor clinic dashboard')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 text-xs font-medium border border-slate-200 cursor-pointer transition">
+            "Clinic Portal"
+          </button>
+          <button onclick="voiceAI.processCommand('Play medicine voice note in hindi')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-amber-50 hover:text-amber-700 text-slate-700 text-xs font-medium border border-slate-200 cursor-pointer transition">
+            "Play Pill Note"
+          </button>
+          <button onclick="voiceAI.processCommand('Show red emergency patients')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-700 text-slate-700 text-xs font-medium border border-slate-200 cursor-pointer transition">
+            "Filter Red Emergency"
+          </button>
+          <button onclick="voiceAI.processCommand('Emergency SOS')" class="px-2.5 py-1 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-semibold border border-rose-200 cursor-pointer transition">
+            "🚨 SOS Emergency"
+          </button>
+        </div>
+      </div>
+
+      <!-- Typed fallback execution -->
+      <div class="flex gap-2">
+        <input type="text" id="typedVoiceCommand" placeholder="Type instruction in any language..." 
+          onkeydown="if(event.key === 'Enter') { voiceAI.processCommand(this.value); this.value=''; }"
+          class="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <button onclick="const el=document.getElementById('typedVoiceCommand'); voiceAI.processCommand(el.value); el.value='';"
+          class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">
+          Run
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PILL ALARM NOTIFICATION MODAL -->
+  <div id="pillAlarmModal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md hidden items-center justify-center p-4">
+    <div id="pillAlarmModalContent" class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-amber-300 ring-4 ring-amber-400/30 animate-in zoom-in-95">
+      <!-- Injected dynamically -->
+    </div>
+  </div>
+
+  <!-- GENERIC MODAL (Patient Profile / Add Medicine) -->
+  <div id="genericModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div id="genericModalContent" class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 animate-in zoom-in-95">
+      <!-- Injected dynamically -->
+    </div>
+  </div>
+
+  <!-- Core Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
